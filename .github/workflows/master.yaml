@@ -1,0 +1,20 @@
+name: Release Manager
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        id: checkout
+        uses: actions/checkout@v6
+      - name: Run SemVer Tag Manager Action
+        id: semver-tag-manager
+        uses: yd-devops-hub/semver-tag-manager@main
