@@ -1,0 +1,5 @@
+name: "SemVer Tag Manager"
+description: "A robust JavaScript-based GitHub Action to automate the creation and management of tags and releases using Semantic Versioning (SemVer) standards."
+runs:
+  using: "node24"
+  main: "dist/index.js"
