@@ -6,10 +6,16 @@ async function run() {
     const prefix = core.getInput('prefix');
     const token = core.getInput('token');
     const startVersion = parseInt(core.getInput('start-version'), 10);
+    const dryRun = core.getBooleanInput('dry-run');
+    const makeLatest = core.getBooleanInput('make-latest');
 
     if (isNaN(startVersion) || (startVersion !== 0 && startVersion !== 1)) {
       core.setFailed('Input "start-version" must be either 0 or 1.');
       return;
+    }
+
+    if (dryRun) {
+      core.info('Dry-run mode enabled — no tag or release will be created.');
     }
 
     const octokit = github.getOctokit(token);
@@ -70,6 +76,14 @@ async function run() {
 
     const sha = context.sha;
 
+    if (dryRun) {
+      core.info(`[dry-run] Would create tag "${newTag}" at ${sha}`);
+      core.info(`[dry-run] Would create release "${newTag}" (make_latest: ${makeLatest})`);
+      core.setOutput('new-tag', newTag);
+      core.setOutput('release-url', '');
+      return;
+    }
+
     // Create the git tag ref
     await octokit.rest.git.createRef({
       owner,
@@ -88,6 +102,7 @@ async function run() {
       body: buildReleaseBody(prTitle, prNumber, bumpType, newTag),
       draft: false,
       prerelease: false,
+      make_latest: makeLatest ? 'true' : 'false',
     });
 
     core.info(`Release created: ${release.html_url}`);

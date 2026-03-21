@@ -34,3 +34,5 @@ jobs:
       - name: Run SemVer Tag Manager Action
         id: semver-tag-manager
         uses: ./
+        with:
+          dry-run: true

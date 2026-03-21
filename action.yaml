@@ -13,6 +13,14 @@ inputs:
     description: "Starting major version number when no tags exist yet (0 or 1)"
     required: false
     default: "0"
+  dry-run:
+    description: "When true, calculates and logs the next version but does not create a tag or release"
+    required: false
+    default: "false"
+  make-latest:
+    description: "When true, the release is marked as the latest release on GitHub"
+    required: false
+    default: "true"
 outputs:
   new-tag:
     description: "The newly created semver tag (e.g. v1.2.3)"
