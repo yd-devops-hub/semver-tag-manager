@@ -21,10 +21,6 @@ inputs:
     description: "When true, the release is marked as the latest release on GitHub"
     required: false
     default: "true"
-  sha:
-    description: "Git commit SHA to tag. Defaults to the SHA that triggered the workflow (context.sha). Override this when you need the tag to point to a locally created commit (e.g. one that includes a built dist/)."
-    required: false
-    default: ""
 outputs:
   new-tag:
     description: "The newly created semver tag (e.g. v1.2.3)"
