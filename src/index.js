@@ -8,6 +8,7 @@ async function run() {
     const startVersion = parseInt(core.getInput('start-version'), 10);
     const dryRun = core.getBooleanInput('dry-run');
     const makeLatest = core.getBooleanInput('make-latest');
+    const shaInput = core.getInput('sha');
 
     if (isNaN(startVersion) || (startVersion !== 0 && startVersion !== 1)) {
       core.setFailed('Input "start-version" must be either 0 or 1.');
@@ -74,7 +75,8 @@ async function run() {
     const newTag = `${prefix}${nextVersion.major}.${nextVersion.minor}.${nextVersion.patch}`;
     core.info(`Next version: ${newTag}`);
 
-    const sha = context.sha;
+    const sha = shaInput || context.sha;
+    core.info(`Tagging SHA: ${sha}${shaInput ? ' (overridden via sha input)' : ''}`);
 
     if (dryRun) {
       core.info(`[dry-run] Would create tag "${newTag}" at ${sha}`);
