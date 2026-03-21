@@ -1,0 +1,33 @@
+name: Test SemVer Tag Manager Action
+
+on:
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        id: checkout
+        uses: actions/checkout@v6
+      - name: Setup Node
+        id: setup-node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+      - name: Install Dependencies
+        id: install-dependencies
+        run: npm install
+      - name: Build Action
+        id: build-action
+        run: ncc build src/index.js -o dist
+      - name: Run SemVer Tag Manager Action
+        id: semver-tag-manager
+        uses: ./

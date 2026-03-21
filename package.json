@@ -1,0 +1,25 @@
+{
+  "name": "semver-tag-manager",
+  "version": "1.0.0",
+  "description": "A robust JavaScript-based GitHub Action to automate the creation and management of tags and releases using Semantic Versioning (SemVer) standards.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yd-devops-hub/semver-tag-manager.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yd-devops-hub/semver-tag-manager/issues"
+  },
+  "homepage": "https://github.com/yd-devops-hub/semver-tag-manager#readme",
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@actions/github": "^6.0.1",
+    "@vercel/ncc": "^0.38.4"
+  }
+}
