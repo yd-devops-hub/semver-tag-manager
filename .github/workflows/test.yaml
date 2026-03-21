@@ -35,4 +35,4 @@ jobs:
         id: semver-tag-manager
         uses: ./
         with:
-          dry-run: true
+          dry-run: false
