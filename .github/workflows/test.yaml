@@ -27,7 +27,7 @@ jobs:
         run: npm install
       - name: Build Action
         id: build-action
-        run: ncc build src/index.js -o dist
+        run: npx ncc build src/index.js -o dist
       - name: Run SemVer Tag Manager Action
         id: semver-tag-manager
         uses: ./
