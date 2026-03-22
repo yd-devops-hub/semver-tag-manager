@@ -11,7 +11,7 @@ async function run() {
     const dryRun = core.getBooleanInput('dry-run');
     const makeLatest = core.getBooleanInput('make-latest');
     const updateMajor = core.getBooleanInput('update-major');
-    const assetsInput = core.getInput('assets');
+    const assetsInput = core.getMultilineInput('assets');
 
     if (isNaN(startVersion) || (startVersion !== 0 && startVersion !== 1)) {
       core.setFailed('Input "start-version" must be either 0 or 1.');
@@ -207,21 +207,20 @@ async function upsertMajorTag({ octokit, owner, repo, prefix, nextVersion, sha }
 }
 
 /**
- * Resolves a multiline assets input string into a flat list of absolute file paths.
- * Each line may be a literal path or a glob pattern. Empty lines are ignored.
+ * Resolves a multiline assets input (array of patterns) into a flat list of absolute file paths.
+ * Each entry may be a literal path or a glob pattern. Empty entries are ignored.
  * Plain paths are resolved directly; glob characters trigger fs.globSync.
  */
-async function resolveAssets(assetsInput) {
-  if (!assetsInput || !assetsInput.trim()) return [];
-  const patterns = assetsInput.split('\n').map((l) => l.trim()).filter(Boolean);
+async function resolveAssets(assetPatterns) {
   const files = new Set();
-  for (const pattern of patterns) {
+  for (const pattern of assetPatterns) {
+    if (!pattern.trim()) continue;
     if (/[*?[{]/.test(pattern)) {
       for (const match of fs.globSync(pattern)) {
         files.add(path.resolve(match));
       }
     } else {
-      const resolved = path.resolve(pattern);
+      const resolved = path.resolve(pattern.trim());
       if (fs.existsSync(resolved)) {
         files.add(resolved);
       } else {
