@@ -45,7 +45,7 @@ jobs:
         uses: ./
         with:
           prefix: "test-"
-          dry-run: true
+          dry-run: false # true
           make-latest: false
           assets: |
             dist.zip
