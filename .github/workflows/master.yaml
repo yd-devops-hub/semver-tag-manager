@@ -28,6 +28,7 @@ jobs:
         id: build-action
         run: npx ncc build src/index.js -o dist
       - name: Create Tag and Release
+        id: create-tag-and-release
         env:
           NEW_TAG: v1.0.0
           GH_TOKEN: ${{ github.token }}
