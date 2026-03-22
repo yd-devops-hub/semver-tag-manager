@@ -46,6 +46,7 @@ jobs:
         with:
           prefix: "test-"
           dry-run: true
+          make-latest: false
           assets: |
             dist.zip
       - name: Outputs
