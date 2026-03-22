@@ -1,5 +1,7 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
+const fs = require('fs');
+const path = require('path');
 
 async function run() {
   try {
@@ -9,6 +11,7 @@ async function run() {
     const dryRun = core.getBooleanInput('dry-run');
     const makeLatest = core.getBooleanInput('make-latest');
     const updateMajor = core.getBooleanInput('update-major');
+    const assetsInput = core.getInput('assets');
 
     if (isNaN(startVersion) || (startVersion !== 0 && startVersion !== 1)) {
       core.setFailed('Input "start-version" must be either 0 or 1.');
@@ -81,6 +84,11 @@ async function run() {
     const newTag = `${prefix}${nextVersion.major}.${nextVersion.minor}.${nextVersion.patch}`;
     core.info(`Next version: ${newTag}`);
 
+    const assetPaths = await resolveAssets(assetsInput);
+    if (assetPaths.length > 0) {
+      core.info(`Assets to upload: ${assetPaths.map((f) => path.basename(f)).join(', ')}`);
+    }
+
     const sha = context.sha;
 
     if (dryRun) {
@@ -90,9 +98,13 @@ async function run() {
       if (updateMajor) {
         core.info(`[dry-run] Would upsert major tag "${majorTag}" at ${sha}`);
       }
+      for (const filePath of assetPaths) {
+        core.info(`[dry-run] Would upload asset "${path.basename(filePath)}"`);
+      }
       core.setOutput('new-tag', newTag);
       core.setOutput('major-tag', majorTag);
       core.setOutput('release-url', '');
+      core.setOutput('assets-uploaded', assetPaths.map((f) => path.basename(f)).join(','));
       return;
     }
 
@@ -127,6 +139,9 @@ async function run() {
     } else {
       core.setOutput('major-tag', '');
     }
+
+    const uploadedNames = await uploadAssets({ octokit, owner, repo, releaseId: release.id, assetPaths });
+    core.setOutput('assets-uploaded', uploadedNames.join(','));
   } catch (error) {
     core.setFailed(error.message);
   }
@@ -189,6 +204,48 @@ async function upsertMajorTag({ octokit, owner, repo, prefix, nextVersion, sha }
       throw err;
     }
   }
+}
+
+/**
+ * Resolves a multiline assets input string into a flat list of absolute file paths.
+ * Each line may be a literal path or a glob pattern. Empty lines are ignored.
+ * Plain paths are resolved directly; glob characters trigger fs.globSync.
+ */
+async function resolveAssets(assetsInput) {
+  if (!assetsInput || !assetsInput.trim()) return [];
+  const patterns = assetsInput.split('\n').map((l) => l.trim()).filter(Boolean);
+  const files = new Set();
+  for (const pattern of patterns) {
+    if (/[*?[{]/.test(pattern)) {
+      for (const match of fs.globSync(pattern)) {
+        files.add(path.resolve(match));
+      }
+    } else {
+      const resolved = path.resolve(pattern);
+      if (fs.existsSync(resolved)) {
+        files.add(resolved);
+      } else {
+        core.warning(`Asset not found, skipping: ${pattern}`);
+      }
+    }
+  }
+  return [...files];
+}
+
+/**
+ * Uploads an array of file paths as assets to a GitHub release.
+ * Returns the list of uploaded filenames.
+ */
+async function uploadAssets({ octokit, owner, repo, releaseId, assetPaths }) {
+  const uploaded = [];
+  for (const filePath of assetPaths) {
+    const name = path.basename(filePath);
+    const data = fs.readFileSync(filePath);
+    await octokit.rest.repos.uploadReleaseAsset({ owner, repo, release_id: releaseId, name, data });
+    core.info(`Uploaded asset "${name}"`);
+    uploaded.push(name);
+  }
+  return uploaded;
 }
 
 /** Builds the release body markdown string. */

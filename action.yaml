@@ -25,6 +25,10 @@ inputs:
     description: "When true, the major version tag (e.g. v1) is created or force-updated to point to the same commit as the new release"
     required: false
     default: "true"
+  assets:
+    description: "Newline-separated list of file paths or glob patterns to upload as release assets (e.g. dist/*.zip)"
+    required: false
+    default: ""
 outputs:
   new-tag:
     description: "The newly created semver tag (e.g. v1.2.3)"
@@ -32,6 +36,8 @@ outputs:
     description: "The upserted major version tag (e.g. v1), or empty if update-major is false"
   release-url:
     description: "The URL of the newly created GitHub release"
+  assets-uploaded:
+    description: "Comma-separated list of asset filenames that were uploaded to the release"
 runs:
   using: "node24"
   main: "dist/index.js"
