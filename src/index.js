@@ -8,6 +8,7 @@ async function run() {
     const startVersion = parseInt(core.getInput('start-version'), 10);
     const dryRun = core.getBooleanInput('dry-run');
     const makeLatest = core.getBooleanInput('make-latest');
+    const updateMajor = core.getBooleanInput('update-major');
 
     if (isNaN(startVersion) || (startVersion !== 0 && startVersion !== 1)) {
       core.setFailed('Input "start-version" must be either 0 or 1.');
@@ -79,6 +80,10 @@ async function run() {
     if (dryRun) {
       core.info(`[dry-run] Would create tag "${newTag}" at ${sha}`);
       core.info(`[dry-run] Would create release "${newTag}" (make_latest: ${makeLatest})`);
+      if (updateMajor) {
+        const majorTag = `${prefix}${nextVersion.major}`;
+        core.info(`[dry-run] Would upsert major tag "${majorTag}" at ${sha}`);
+      }
       core.setOutput('new-tag', newTag);
       core.setOutput('release-url', '');
       return;
@@ -108,6 +113,10 @@ async function run() {
     core.info(`Release created: ${release.html_url}`);
     core.setOutput('new-tag', newTag);
     core.setOutput('release-url', release.html_url);
+
+    if (updateMajor) {
+      await upsertMajorTag({ octokit, owner, repo, prefix, nextVersion, sha });
+    }
   } catch (error) {
     core.setFailed(error.message);
   }
@@ -150,6 +159,26 @@ function isGreater(a, b) {
 /** Escapes special regex characters in a string. */
 function escapeRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Creates or force-updates the major version tag (e.g. v1) to point to the given sha.
+ * Tries to create the ref first; if it already exists, updates it with force.
+ */
+async function upsertMajorTag({ octokit, owner, repo, prefix, nextVersion, sha }) {
+  const majorTag = `${prefix}${nextVersion.major}`;
+  const ref = `refs/tags/${majorTag}`;
+  try {
+    await octokit.rest.git.createRef({ owner, repo, ref, sha });
+    core.info(`Major tag "${majorTag}" created at ${sha}`);
+  } catch (err) {
+    if (err.status === 422) {
+      await octokit.rest.git.updateRef({ owner, repo, ref: `tags/${majorTag}`, sha, force: true });
+      core.info(`Major tag "${majorTag}" updated to ${sha}`);
+    } else {
+      throw err;
+    }
+  }
 }
 
 /** Builds the release body markdown string. */
