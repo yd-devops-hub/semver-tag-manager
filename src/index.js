@@ -22,12 +22,18 @@ async function run() {
     const octokit = github.getOctokit(token);
     const context = github.context;
 
-    if (context.eventName !== 'pull_request') {
-      core.setFailed('This action must be triggered by a pull_request event.');
+    const pr = context.payload.pull_request;
+
+    if (!pr) {
+      core.info(`Event "${context.eventName}" has no pull_request payload — skipping.`);
       return;
     }
 
-    const pr = context.payload.pull_request;
+    if (context.payload.action === 'closed' && !pr.merged) {
+      core.info('Pull request was closed without merging — skipping.');
+      return;
+    }
+
     const prTitle = pr.title.trim();
     const prNumber = pr.number;
     const { owner, repo } = context.repo;
