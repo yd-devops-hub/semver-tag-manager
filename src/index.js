@@ -222,6 +222,7 @@ async function resolveAssets(assetPatterns) {
     } else {
       const resolved = path.resolve(pattern.trim());
       if (fs.existsSync(resolved)) {
+        core.info(`Resolved asset: ${resolved}`);
         files.add(resolved);
       } else {
         core.warning(`Asset not found, skipping: ${pattern}`);
@@ -237,10 +238,22 @@ async function resolveAssets(assetPatterns) {
  */
 async function uploadAssets({ octokit, owner, repo, releaseId, assetPaths }) {
   const uploaded = [];
+  core.info(`Uploading ${assetPaths.length} asset(s)...`);
   for (const filePath of assetPaths) {
     const name = path.basename(filePath);
     const data = fs.readFileSync(filePath);
-    await octokit.rest.repos.uploadReleaseAsset({ owner, repo, release_id: releaseId, name, data });
+    core.info(`Uploading "${name}" (${data.byteLength} bytes)...`);
+    await octokit.rest.repos.uploadReleaseAsset({
+      owner,
+      repo,
+      release_id: releaseId,
+      name,
+      data,
+      headers: {
+        'content-type': 'application/octet-stream',
+        'content-length': data.byteLength,
+      },
+    });
     core.info(`Uploaded asset "${name}"`);
     uploaded.push(name);
   }
