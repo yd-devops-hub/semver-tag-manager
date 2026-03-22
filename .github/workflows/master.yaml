@@ -52,7 +52,7 @@ jobs:
           if [ -n "${MAJOR_TAG}" ]; then
             git tag -fa "${MAJOR_TAG}" -m "Release ${NEW_TAG}"
           fi
-          git push origin HEAD:main "${NEW_TAG}"
+          git push origin "${NEW_TAG}"
           if [ -n "${MAJOR_TAG}" ]; then
             git push -f origin "${MAJOR_TAG}"
           fi
