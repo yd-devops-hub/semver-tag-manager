@@ -1,6 +1,5 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
-const glob = require('@actions/glob');
 const fs = require('fs');
 const path = require('path');
 
@@ -210,12 +209,18 @@ async function upsertMajorTag({ octokit, owner, repo, prefix, nextVersion, sha }
 /**
  * Resolves a multiline assets input string into a flat list of absolute file paths.
  * Each line may be a literal path or a glob pattern. Empty lines are ignored.
+ * Uses Node 22+ built-in fs.globSync — no extra dependency required.
  */
 async function resolveAssets(assetsInput) {
   if (!assetsInput || !assetsInput.trim()) return [];
   const patterns = assetsInput.split('\n').map((l) => l.trim()).filter(Boolean);
-  const globber = await glob.create(patterns.join('\n'));
-  return globber.glob();
+  const files = new Set();
+  for (const pattern of patterns) {
+    for (const match of fs.globSync(pattern)) {
+      files.add(path.resolve(match));
+    }
+  }
+  return [...files];
 }
 
 /**
