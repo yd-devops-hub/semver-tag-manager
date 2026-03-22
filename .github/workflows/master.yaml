@@ -29,7 +29,7 @@ jobs:
         run: npx ncc build src/index.js -o dist
       - name: Create Tag and Release
         env:
-          NEW_TAG: v0.0.1
+          NEW_TAG: v1.0.0
           GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name "github-actions[bot]"
