@@ -46,11 +46,11 @@ jobs:
         uses: ./
         with:
           prefix: "test-"
-          dry-run: false # true
+          dry-run: true
           make-latest: false
-          assets: |
-            dist.zip
-            dist2.zip
+          # assets: |
+          #   dist.zip
+          #   dist2.zip
       - name: Outputs
         id: output-new-tag
         run: |
