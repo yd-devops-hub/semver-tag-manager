@@ -27,10 +27,15 @@ jobs:
       - name: Build Action
         id: build-action
         run: npx ncc build src/index.js -o dist
+      - name: Run SemVer Tag Manager Action
+        id: semver-tag-manager
+        uses: ./
+        with:
+          dry-run: true
       - name: Create Tag and Release
         id: create-tag-and-release
         env:
-          NEW_TAG: v1.0.0
+          NEW_TAG: ${{ steps.semver-tag-manager.outputs.new-tag }}
           GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name "github-actions[bot]"
