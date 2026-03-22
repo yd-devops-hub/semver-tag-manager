@@ -43,7 +43,7 @@ jobs:
         id: semver-tag-manager
         uses: ./
         with:
-          dry-run: true
+          dry-run: false
       - name: Outputs
         id: output-new-tag
         run: echo "new-tag=$${steps.semver-tag-manager.outputs.new-tag}"
