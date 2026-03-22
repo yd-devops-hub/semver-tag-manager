@@ -39,6 +39,7 @@ jobs:
         id: create-tag-and-release
         env:
           NEW_TAG: ${{ steps.semver-tag-manager.outputs.new-tag }}
+          MAJOR_TAG: ${{ steps.semver-tag-manager.outputs.major-tag }}
           GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name "github-actions[bot]"
@@ -48,7 +49,13 @@ jobs:
             git commit -m "chore: bundle dist for release ${NEW_TAG} [skip ci]"
           fi
           git tag -a "${NEW_TAG}" -m "Release ${NEW_TAG}"
+          if [ -n "${MAJOR_TAG}" ]; then
+            git tag -fa "${MAJOR_TAG}" -m "Release ${NEW_TAG}"
+          fi
           git push origin "${NEW_TAG}"
+          if [ -n "${MAJOR_TAG}" ]; then
+            git push -f origin "${MAJOR_TAG}"
+          fi
           gh release create "${NEW_TAG}" \
             --title "${NEW_TAG}" \
             --generate-notes \

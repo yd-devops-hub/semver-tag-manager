@@ -28,6 +28,8 @@ inputs:
 outputs:
   new-tag:
     description: "The newly created semver tag (e.g. v1.2.3)"
+  major-tag:
+    description: "The upserted major version tag (e.g. v1), or empty if update-major is false"
   release-url:
     description: "The URL of the newly created GitHub release"
 runs:

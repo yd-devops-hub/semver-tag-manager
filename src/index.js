@@ -86,11 +86,12 @@ async function run() {
     if (dryRun) {
       core.info(`[dry-run] Would create tag "${newTag}" at ${sha}`);
       core.info(`[dry-run] Would create release "${newTag}" (make_latest: ${makeLatest})`);
+      const majorTag = updateMajor ? `${prefix}${nextVersion.major}` : '';
       if (updateMajor) {
-        const majorTag = `${prefix}${nextVersion.major}`;
         core.info(`[dry-run] Would upsert major tag "${majorTag}" at ${sha}`);
       }
       core.setOutput('new-tag', newTag);
+      core.setOutput('major-tag', majorTag);
       core.setOutput('release-url', '');
       return;
     }
@@ -122,6 +123,9 @@ async function run() {
 
     if (updateMajor) {
       await upsertMajorTag({ octokit, owner, repo, prefix, nextVersion, sha });
+      core.setOutput('major-tag', `${prefix}${nextVersion.major}`);
+    } else {
+      core.setOutput('major-tag', '');
     }
   } catch (error) {
     core.setFailed(error.message);
