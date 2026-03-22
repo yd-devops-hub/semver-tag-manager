@@ -209,15 +209,24 @@ async function upsertMajorTag({ octokit, owner, repo, prefix, nextVersion, sha }
 /**
  * Resolves a multiline assets input string into a flat list of absolute file paths.
  * Each line may be a literal path or a glob pattern. Empty lines are ignored.
- * Uses Node 22+ built-in fs.globSync — no extra dependency required.
+ * Plain paths are resolved directly; glob characters trigger fs.globSync.
  */
 async function resolveAssets(assetsInput) {
   if (!assetsInput || !assetsInput.trim()) return [];
   const patterns = assetsInput.split('\n').map((l) => l.trim()).filter(Boolean);
   const files = new Set();
   for (const pattern of patterns) {
-    for (const match of fs.globSync(pattern)) {
-      files.add(path.resolve(match));
+    if (/[*?[{]/.test(pattern)) {
+      for (const match of fs.globSync(pattern)) {
+        files.add(path.resolve(match));
+      }
+    } else {
+      const resolved = path.resolve(pattern);
+      if (fs.existsSync(resolved)) {
+        files.add(resolved);
+      } else {
+        core.warning(`Asset not found, skipping: ${pattern}`);
+      }
     }
   }
   return [...files];
