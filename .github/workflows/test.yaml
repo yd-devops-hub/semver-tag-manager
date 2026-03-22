@@ -46,4 +46,7 @@ jobs:
           dry-run: true
       - name: Outputs
         id: output-new-tag
-        run: echo "new-tag=${{steps.semver-tag-manager.outputs.new-tag}}"
+        run: |
+          echo "new-tag=${{steps.semver-tag-manager.outputs.new-tag}}"
+          echo "major-tag=${{steps.semver-tag-manager.outputs.major-tag}}"
+          echo "release-url=${{steps.semver-tag-manager.outputs.release-url}}"
