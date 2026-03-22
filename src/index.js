@@ -29,7 +29,7 @@ async function run() {
       return;
     }
 
-    if (!pr.merged) {
+    if (context.payload.action === 'closed' && !pr.merged) {
       core.info('Pull request was closed without merging — skipping.');
       return;
     }
