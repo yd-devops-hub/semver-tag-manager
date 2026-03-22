@@ -40,6 +40,7 @@ jobs:
           git diff --cached --quiet || git commit -m "chore: update dist build [skip ci]"
           # git push
           zip -r dist.zip dist/
+          zip -r dist2.zip dist/
       - name: Run SemVer Tag Manager Action
         id: semver-tag-manager
         uses: ./
@@ -49,6 +50,7 @@ jobs:
           make-latest: false
           assets: |
             dist.zip
+            dist2.zip
       - name: Outputs
         id: output-new-tag
         run: |
